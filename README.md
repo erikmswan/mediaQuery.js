@@ -21,7 +21,7 @@ $.mediaQuery('>500 && <1500');
 
 Comparison operators supported: >=, <=, >, <, =
 
-Logic operators supported: && (with || to come)
+Logic operators supported: && (with || and () to come)
 
 
 # Future plans
