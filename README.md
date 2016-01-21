@@ -1,5 +1,5 @@
 # mediaQuery.js
-A jQuery extension to pass strings as media queries, with future plans to incorporate callbacks for automatic event binding appropriate to the passed media query.
+A jQuery extension to pass strings as media queries with future plans to incorporate callbacks for automatic event binding appropriate to the passed media query.
 
 This extension currently only has parsing capabilities, returning a boolean. So it only accepts a single string argument for now.
 
