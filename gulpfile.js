@@ -1,12 +1,10 @@
 // include gulp
-var gulp = require('gulp'); 
+var gulp = require('gulp');
 
 // include plug-ins
 var jshint = require('gulp-jshint'),
   stripDebug = require('gulp-strip-debug'),
   uglify = require('gulp-uglify'),
-  browserify = require('browserify'),
-  source = require('vinyl-source-stream'),
   rename = require('gulp-rename'),
   cache = require('gulp-cached');
 
@@ -27,18 +25,11 @@ gulp.task('jsWatch', function() {
   gulp.watch('./src/*.js', ['jshint']);
 });
 
-// Browserify Bundling
-gulp.task('browserify', function() {
-
-  browserify('./src/mediaQuery.js')
-    .bundle()
-    .pipe(source('bundle.js'))
-    .pipe(gulp.dest('./build/'))
-});
-
 // JS concat, strip debugging and minify
 gulp.task('scripts', function() {
   gulp.src('./src/mediaQuery.js')
+    .pipe(rename('mediaQuery.debug.js'))
+    .pipe(gulp.dest('./build/'))
     .pipe(uglify())
     .pipe(stripDebug())
     .pipe(rename('mediaQuery.min.js'))
@@ -47,5 +38,4 @@ gulp.task('scripts', function() {
 
 
 // default task
-gulp.task('default', ['browserify', 'scripts'], function() {});
-
+gulp.task('default', ['scripts']);
