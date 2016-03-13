@@ -1,11 +1,22 @@
 # mediaQuery.js
-A jQuery extension to pass strings as media queries with future plans to incorporate callbacks for automatic event binding appropriate to the passed media query.
+mediaQuery.js is both a jQuery extension and plugin with two different main components. The first is the extension:
 
-This extension currently only has parsing capabilities, returning a boolean. So it only accepts a single string argument for now.
+```javascript
+$.mediaQuery();
+```
+
+which can only be passed a single string consisting of a query to the current viewport, returning either true or false.  And rather than using css-like syntax (e.g. 'max-width: 480px and min-width: 768'), it instead uses mathematical and programming symbols.
+
+The second component is an event binder based on the passed media query. This component is a jQuery plugin (rather than an extension), which will bind a function that runs when the media query is matched to the viewport, and another that runs when the viewport is unmatched.
+
+```javascript
+$(element).mediaQuery('>480 && <768', matchingFunction(argument), unMatchingFunction(argument));
+```
 
 
-# How to use:
-Pass a string in the following format: 
+# How to Use
+## Extension
+For the extension, pass a string in the following format: 
 
 ```javascript
 $.mediaQuery('>500');
@@ -13,16 +24,31 @@ $.mediaQuery('>500');
 
 This will check if the window is currently greater than 500px wide, returning either true or false.
 
-This also supports limited logic functionality (more to come), which is used as such: 
+More elaborate queries are possible, such as:
 
-```
+```javascript
 $.mediaQuery('>500 && <1500');
+$.mediaQuery('>320 && <768 && >1200');
+$.mediaQuery('(>320 && <768) || (>1200 && <1600)');
 ```
 
-Comparison operators supported: >=, <=, >, <, =
+each of these testing against the value of window.innerWidth and returning a boolean.
 
-Logic operators supported: && (with || and () to come)
+## Plugin
 
+This method will attach the 2 callbacks to the document ready event and the window resize event. These two functions will be invoked when the media query is match and unmatched, respectively, and will each be passed the jQuery node list upon which the plugin is invoked. For example:
 
-# Future plans
-I plan to allow callbacks to be passed -- one for when the media query is matched, and another 'reset' function for when the passed range is exited, either on pageload or through browser resizing. The 'matched' function will be invoked on pageload and bound to window resize, utilizing (perhaps optional) toggles to make sure the function runs a sensible amount of times (usually once). Otherwise, if it receives a single string, it falls back to the boolean return function.
+```javascript
+$.mediaQuery('>500 && <1500');
+$.mediaQuery('>320 && <768 && >1200', matchingFunction(argument), unMatchingFunction(argument));
+```
+
+By default, there is a toggle in place so that the functions are only run once when either the matched or unmatched ranges are entered. This can be disabled by passing a boolean as the fourth and final argument, allowing the function to run every time the window resize event is fired. For example:
+
+```javascript
+$.mediaQuery('>320 && <768 && >1200', matchingFunction(argument), unMatchingFunction(argument), true);
+```
+
+Note: My next to do is to make the third argument optional, allowing it to also be the boolean.
+
+I hope you enjoy :)
