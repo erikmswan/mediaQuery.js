@@ -75,7 +75,7 @@
 			}
 
 
-			// STRING PARSE ------------------------------------/
+			// PARSE STRING TO FIND SCOPES ------------------------------------/
 
 			// Check passed character with all accepted character categories
 			function verifyChar(char) {
@@ -97,18 +97,11 @@
 					verifyChar(ch);
 				} catch(e) {
 					console.log(e.name + ': ' + e.message);
+					error('Verify character failed', 'The passed string contains an invalid character');
 					return;
 				}
 
 				return ch;
-			}
-
-			// Set up constructor for 'Unit' evaluations
-			// A 'Unit' is one level of mathematical scope, indicated by parentheses
-			var CollectedValue = function() {
-				this.value = [];
-				this.comparison = [];
-				this.logic = [];
 			}
 
 
@@ -116,7 +109,7 @@
 			function stringParse(string) {
 
 				// prep unit variable
-				var unit = '';
+				var scope = '';
 
 				for (var at = 0; at < string.length;) {
 
@@ -131,51 +124,60 @@
 						console.log('stringParse -- found parenthesis');
 						console.log('stringParse -- string: ' + string);
 						if (acceptedCharacters.logic[ch] === '(') {
+
 							console.group('Open Parenthesis');
 							console.log('string.slice(at): ' + string.slice(at));
 							// Call recursive function to walk nested parenthesis scopes
 							var parsedUnit = stringParse(string.slice(at))
 
-							unit += parsedUnit.parsedUnit;
+							scope += parsedUnit.parsedUnit;
 							at += parsedUnit.indexesToSkip + 1;
 							console.log('stringParse -- open parenthesis, end recursion. parsedUnit: ' + parsedUnit + '; parsedUnit.parsedUnit: ' + parsedUnit.parsedUnit + '; at: ' + at);
 							console.groupEnd();
 						} else if (acceptedCharacters.logic[ch] === ')') {
 							console.group('Closed Parenthesis');
-							// end recursive function
+							// end of recursive functionn -- parse the whole scope and return it to stringParse
 							var recursiveReturn = {
-								parsedUnit: scopeParse(unit),
-								indexesToSkip: unit.length
+								parsedUnit: scopeParse(scope),
+								indexesToSkip: scope.length
 							}
 							console.log('indexesToSkip: ' + recursiveReturn.indexesToSkip);
 							console.log('recursiveReturn.parsedUnit: ' + recursiveReturn.parsedUnit);
 							console.groupEnd();
 							return recursiveReturn;
 						} else {
-							// add current character to unit
-							unit += ch;
-							console.log('No parenthesis -- unit after += ch: ' + unit);
+							// If current character is not ( or ), then add it to scope
+							scope += ch;
+							console.log('No parenthesis -- scope after += ch: ' + scope);
 						}
 					// making sure both ends of parentheses are present
 					} else if ((string.indexOf('(') < 0 && string.indexOf(')') > -1) || (string.indexOf('(') > -1 && string.indexOf(')') < 0)) {
 						try {} catch(e) { error('Syntax Error', 'Expected both opening and closing parentheses but only found one'); }
 					} else {
-						unit += ch;
+						// If current character is not ( or ), then add it to scope
+						scope += ch;
 					}
 
 				}
-				console.log('unit: ' + unit);
-				console.dir('scopeParse(unit): ' + scopeParse(unit));
+				console.log('scope: ' + scope);
+				console.dir('scopeParse(scope): ' + scopeParse(scope));
 				console.groupEnd();
-				return scopeParse(unit);
+				return scopeParse(scope);
 			}
 
 
-			// PARSE SCOPE
+			// PARSE SINGLE SCOPE ------------------------------------/
+
 			function scopeParse(string) {
 				console.group('scopeParse');
-				// Container
-				var currentUnit = new CollectedValue();
+
+				// Once the 'scope' is extracted from parentheses, this function will send it to the logic and eval functions
+				// prep data to send for logic parsing
+				var currentUnit = {
+					value: [],
+					comparison: [],
+					logic: []
+				}
 
 				// Array tracking variables
 				var logIterator = 0,
@@ -225,37 +227,44 @@
 			}
 
 
-			// PARSE UNIT LOGIC
-			function logicParse(unit) {
+			// EVALUATE SCOPE LOGIC ------------------------------------/
 
+			function logicParse(unit) {
+				// Once the scope array has been prepped,
+				// this function will evaluate all logic and return a single boolean
 				console.group('logicParse');
 				console.log('unit: ');
 				console.dir(unit);
 				var evalResults = [],
 						evalFinalResult = true;
 
-				for (var i = 0; i < unit.logic.length;) {
+				for (var i = 0; i < (unit.logic.length === 0 ? 1 : unit.logic.length);) {
 
+					// If no logic, simply evaluate single
 					if (unit.logic.length === 0) {
 						console.log('no logic operators');
 						evalResults.push(eval(unit.comparison[i], unit.value[i]));
+
+					// Otherwise evaluate && and ||
 					} else if (unit.logic[i] === '&&') {
 						console.log('found &&');
-						if (unit.comparison.length === 1) {
-							evalResults.push(eval(unit.comparison[i], unit.value[i]) && eval(unit.comparison[i + 1], unit.value[i + 1]));
-						}
 						evalResults.push(eval(unit.comparison[i], unit.value[i]) && eval(unit.comparison[i + 1], unit.value[i + 1]));
 						console.log('i: ' + eval(unit.comparison[i], unit.value[i]) + '; i + 1' + eval(unit.comparison[i + 1], unit.value[i + 1]));
 						console.log('evalResults[' + i + ']: ' + evalResults[i]);
+
 					} else if (unit.logic[i] === '||') {
 						console.log('found ||');
 						evalResults.push(eval(unit.comparison[i], unit.value[i]) || eval(unit.comparison[i + 1], unit.value[i + 1]));
 						console.log('evalResults[' + i + ']: ' + evalResults[i]);
+
+					} else if (unit.logic.length < (unit.value.length - 1)) {
+						error('Logic error', 'Too few logic operators found -- please check your syntax. Logic operators found: ' + unit.logic.length + '; Values found: ' + unit.value.length);
 					}
 
 					i++;
 				}
 
+				// Walk the array and look for any false values. This final result is passed all the way up the function chain
 				evalResults.forEach(function(el) {
 					if (el === false || el === 'false') {
 						evalFinalResult = false;
@@ -269,7 +278,7 @@
 			}
 
 
-			// EVALUATE INDIVIDUAL STRINGS ------------------------------------/
+			// EVALUATE MATH UNITS ------------------------------------/
 
 			function eval(comparison, value) {
 
@@ -313,38 +322,59 @@
 				} else if (value === 'false') {
 					evalResult = false;
 				} else {
-					error('Data type error', 'number or true or false in eval function, instead received ' + value);
+					error('Data type error', 'Expected number or true or false in eval function, instead received ' + value);
 				}
 				console.groupEnd();
 				return evalResult;
 			}
 
 			console.groupEnd();
+
 			// PARSE AND EVALUATE!
 			return stringParse(args[0]);
 
 		}
 	});
 
-})(jQuery);
+	$.fn.mediaQuery = function(query, matchingFunc, nonMatchingFunc, toggle) {
 
+		// FUNCTION INVOKED IN MATCHING && NONMATCHING MEDIA QUERY --------------------/
+		var toggled = true;
 
-// Event binding as a plugin
-(function($) {
+		function matchMedia(el, ready) {
 
-	$.fn.mediaQuery = function() {
+			if ($.mediaQuery(query)) {
+				if ((toggle === undefined) || toggle) {
+					if (toggled) {
+						matchingFunc(el);
+						toggled = false;
+					}
+				} else if (!toggle) {
+					matchingFunc(el);
+				}
+			}	else if (!$.mediaQuery(query)) {
+				if ((toggle === undefined) || toggle) {
+					if (ready) {
+						toggled = false;
+					}
+					if (!toggled) {
+						nonMatchingFunc(el);
+						toggled = true;
+					}
+				} else if (!toggle) {
+					nonMatchingFunc(el);
+				}
+			}
+		}
 
-		// FUNCTION INVOKED IN MATCHING MEDIA QUERY --------------------/
+		var that = this;
 
-
-
-			// ---------------------------*
-			// AUTOMATIC FUNCTION BINDING GOES HERE
-			// ---------------------------*
-
-
-
-		// FUNCTION INVOKED IN UNMATCHING MEDIA QUERY --------------------/
-
+		$(document).on('ready', function() {
+			matchMedia($(that), true)
+		});
+		$(window).on('resize', function() {
+			matchMedia($(that))
+		});
 	}
+
 })(jQuery);

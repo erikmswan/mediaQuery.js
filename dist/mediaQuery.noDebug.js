@@ -59,18 +59,18 @@
 			// Throw error if wrong data type or too many arguments
 			try {
 				if (typeof args[0] !== 'string') {
-					console.log('first if');
+					void 0;
 					error('Data Type Error', 'Please only pass one string argument with an optional boolean to include the raw and evaluated data instead. Queries can be chained by including them in one string separated by the && operator, e.g. ">768 && <1024"');
 
 				} else if (typeof args[0] === 'string' && typeof args[1] !== 'boolean' && typeof args[1] !== 'undefined') {
-					console.log(typeof args[0]);
+					void 0;
 					error('Data Type Error', 'The second argument must be a boolean, which will determine whether the method returns the raw and evaluated data instead.');
 
 				} else if (args.length > 2) {
 					error('Too Many Aguments', 'Please only pass one string argument with an optional boolean to include the raw and evaluated data instead. Queries can be chained by including them in one string separated by logic operators, e.g. "(>768 && <1024) || (<320 && >1600)"');
 				}
 			} catch(e) {
-				console.log(e.name + ': ' + e.message);
+				void 0;
 				return;
 			}
 
@@ -96,7 +96,7 @@
 				try {
 					verifyChar(ch);
 				} catch(e) {
-					console.log(e.name + ': ' + e.message);
+					void 0;
 					error('Verify character failed', 'The passed string contains an invalid character');
 					return;
 				}
@@ -121,34 +121,34 @@
 
 					// if opening parenthesis, start recursive call
 					if (string.indexOf('(') > -1 || string.indexOf(')') > -1) {
-						console.log('stringParse -- found parenthesis');
-						console.log('stringParse -- string: ' + string);
+						void 0;
+						void 0;
 						if (acceptedCharacters.logic[ch] === '(') {
 
-							console.group('Open Parenthesis');
-							console.log('string.slice(at): ' + string.slice(at));
+							void 0;
+							void 0;
 							// Call recursive function to walk nested parenthesis scopes
 							var parsedUnit = stringParse(string.slice(at))
 
 							scope += parsedUnit.parsedUnit;
 							at += parsedUnit.indexesToSkip + 1;
-							console.log('stringParse -- open parenthesis, end recursion. parsedUnit: ' + parsedUnit + '; parsedUnit.parsedUnit: ' + parsedUnit.parsedUnit + '; at: ' + at);
-							console.groupEnd();
+							void 0;
+							void 0;
 						} else if (acceptedCharacters.logic[ch] === ')') {
-							console.group('Closed Parenthesis');
+							void 0;
 							// end of recursive functionn -- parse the whole scope and return it to stringParse
 							var recursiveReturn = {
 								parsedUnit: scopeParse(scope),
 								indexesToSkip: scope.length
 							}
-							console.log('indexesToSkip: ' + recursiveReturn.indexesToSkip);
-							console.log('recursiveReturn.parsedUnit: ' + recursiveReturn.parsedUnit);
-							console.groupEnd();
+							void 0;
+							void 0;
+							void 0;
 							return recursiveReturn;
 						} else {
 							// If current character is not ( or ), then add it to scope
 							scope += ch;
-							console.log('No parenthesis -- scope after += ch: ' + scope);
+							void 0;
 						}
 					// making sure both ends of parentheses are present
 					} else if ((string.indexOf('(') < 0 && string.indexOf(')') > -1) || (string.indexOf('(') > -1 && string.indexOf(')') < 0)) {
@@ -159,9 +159,9 @@
 					}
 
 				}
-				console.log('scope: ' + scope);
-				console.dir('scopeParse(scope): ' + scopeParse(scope));
-				console.groupEnd();
+				void 0;
+				void 0;
+				void 0;
 				return scopeParse(scope);
 			}
 
@@ -169,7 +169,7 @@
 			// PARSE SINGLE SCOPE ------------------------------------/
 
 			function scopeParse(string) {
-				console.group('scopeParse');
+				void 0;
 
 				// Once the 'scope' is extracted from parentheses, this function will send it to the logic and eval functions
 				// prep data to send for logic parsing
@@ -219,10 +219,10 @@
 						currentUnit.value[valIterator] += ch;
 					}
 				}
-				console.log('string: ' + string);
-				console.log('currentUnit: ' + currentUnit);
-				console.dir(currentUnit)
-				console.groupEnd();
+				void 0;
+				void 0;
+				void 0
+				void 0;
 				return logicParse(currentUnit);
 			}
 
@@ -232,9 +232,9 @@
 			function logicParse(unit) {
 				// Once the scope array has been prepped,
 				// this function will evaluate all logic and return a single boolean
-				console.group('logicParse');
-				console.log('unit: ');
-				console.dir(unit);
+				void 0;
+				void 0;
+				void 0;
 				var evalResults = [],
 						evalFinalResult = true;
 
@@ -242,20 +242,20 @@
 
 					// If no logic, simply evaluate single
 					if (unit.logic.length === 0) {
-						console.log('no logic operators');
+						void 0;
 						evalResults.push(eval(unit.comparison[i], unit.value[i]));
 
 					// Otherwise evaluate && and ||
 					} else if (unit.logic[i] === '&&') {
-						console.log('found &&');
+						void 0;
 						evalResults.push(eval(unit.comparison[i], unit.value[i]) && eval(unit.comparison[i + 1], unit.value[i + 1]));
-						console.log('i: ' + eval(unit.comparison[i], unit.value[i]) + '; i + 1' + eval(unit.comparison[i + 1], unit.value[i + 1]));
-						console.log('evalResults[' + i + ']: ' + evalResults[i]);
+						void 0;
+						void 0;
 
 					} else if (unit.logic[i] === '||') {
-						console.log('found ||');
+						void 0;
 						evalResults.push(eval(unit.comparison[i], unit.value[i]) || eval(unit.comparison[i + 1], unit.value[i + 1]));
-						console.log('evalResults[' + i + ']: ' + evalResults[i]);
+						void 0;
 
 					} else if (unit.logic.length < (unit.value.length - 1)) {
 						error('Logic error', 'Too few logic operators found -- please check your syntax. Logic operators found: ' + unit.logic.length + '; Values found: ' + unit.value.length);
@@ -271,9 +271,9 @@
 					}
 				});
 
-				console.log(evalResults);
-				console.log(evalFinalResult);
-				console.groupEnd();
+				void 0;
+				void 0;
+				void 0;
 				return evalFinalResult;
 			}
 
@@ -283,10 +283,10 @@
 			function eval(comparison, value) {
 
 				var evalResult; // Setting up result outside loop to return
-				console.group('eval');
-				console.log('value: ' + value);
+				void 0;
+				void 0;
 				if (value !== 'true' && value !== 'false') {
-					console.log("isn't boolean");
+					void 0;
 					// convert stringified comparison operator to real operator and evaluate
 					switch (comparison) {
 						case '<':
@@ -312,23 +312,23 @@
 									error('Syntax Error', 'Incorrect comparison operator. Received: ' + comparison);
 								}
 							} catch(e) {
-								console.log(e.name + ': ' + e.message);
+								void 0;
 							}
 							break;
 					}
 				} else if (value === 'true') {
 					evalResult = true;
-					console.log('is boolean -- evalResult: ' + evalResult + '; value: ' + value);
+					void 0;
 				} else if (value === 'false') {
 					evalResult = false;
 				} else {
 					error('Data type error', 'Expected number or true or false in eval function, instead received ' + value);
 				}
-				console.groupEnd();
+				void 0;
 				return evalResult;
 			}
 
-			console.groupEnd();
+			void 0;
 
 			// PARSE AND EVALUATE!
 			return stringParse(args[0]);

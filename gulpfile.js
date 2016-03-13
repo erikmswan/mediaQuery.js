@@ -30,8 +30,10 @@ gulp.task('scripts', function() {
   gulp.src('./src/mediaQuery.js')
     .pipe(rename('mediaQuery.debug.js'))
     .pipe(gulp.dest('./dist/'))
-    .pipe(uglify())
     .pipe(stripDebug())
+    .pipe(rename('mediaQuery.noDebug.js'))
+    .pipe(gulp.dest('./dist/'))
+    .pipe(uglify())
     .pipe(rename('mediaQuery.min.js'))
     .pipe(gulp.dest('./dist/'));
 });
