@@ -29,11 +29,11 @@ gulp.task('jsWatch', function() {
 gulp.task('scripts', function() {
   gulp.src('./src/mediaQuery.js')
     .pipe(rename('mediaQuery.debug.js'))
-    .pipe(gulp.dest('./build/'))
+    .pipe(gulp.dest('./dist/'))
     .pipe(uglify())
     .pipe(stripDebug())
     .pipe(rename('mediaQuery.min.js'))
-    .pipe(gulp.dest('./build/'));
+    .pipe(gulp.dest('./dist/'));
 });
 
 
