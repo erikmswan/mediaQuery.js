@@ -60,7 +60,7 @@ $(el).('>768', function(el) { el.css('background', 'red'); });
 
 With the toggle, the background of 'el' would not turn black at 767px, as you might expect. The range of >320 must be exited, meaning the window would have to be resized to at least 319, and then reentered again to make sure the matching function runs.
 
-Without the toggle, the function will run at every resize, and the background of 'el' will change black at 767px. In other words, running:
+Without the toggle, the function will run at every resize, and the background of 'el' will change black at 767px. For example:
 
 ```javascript
 $(el).('>320', function(el) { el.css('background', 'black'); }, false);
