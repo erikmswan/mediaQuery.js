@@ -3,18 +3,18 @@
 
 (function($) {
 
+	// ERROR HANDLING ------------------------------------/
+
+	function Error(name, message) {
+		this.name = name;
+		this.message = message;
+	}
+
+
+	// PARSING EXTENSION ------------------------------------/
+
 	$.extend({
 		mediaQuery: function() {
-
-
-			// ERROR HANDLING & UTILITY ------------------------------------/
-
-			function error(name, message) {
-				throw {
-					name: name,
-					message: message,
-				};
-			}
 
 
 			// PARSING ARGS ----------------------------------/
@@ -60,17 +60,17 @@
 			try {
 				if (typeof args[0] !== 'string') {
 					console.log('first if');
-					error('Data Type Error', 'Please only pass one string argument with an optional boolean to include the raw and evaluated data instead. Queries can be chained by including them in one string separated by the && operator, e.g. ">768 && <1024"');
+					throw new Error('Data Type Error', 'Please only pass one string argument with an optional boolean to include the raw and evaluated data instead. Queries can be chained by including them in one string separated by the && operator, e.g. ">768 && <1024"');
 
 				} else if (typeof args[0] === 'string' && typeof args[1] !== 'boolean' && typeof args[1] !== 'undefined') {
 					console.log(typeof args[0]);
-					error('Data Type Error', 'The second argument must be a boolean, which will determine whether the method returns the raw and evaluated data instead.');
+					throw new Error('Data Type Error', 'The second argument must be a boolean, which will determine whether the method returns the raw and evaluated data instead.');
 
 				} else if (args.length > 2) {
-					error('Too Many Aguments', 'Please only pass one string argument with an optional boolean to include the raw and evaluated data instead. Queries can be chained by including them in one string separated by logic operators, e.g. "(>768 && <1024) || (<320 && >1600)"');
+					throw new Error('Too Many Aguments', 'Please only pass one string argument with an optional boolean to include the raw and evaluated data instead. Queries can be chained by including them in one string separated by logic operators, e.g. "(>768 && <1024) || (<320 && >1600)"');
 				}
 			} catch(e) {
-				console.log(e.name + ': ' + e.message);
+				console.warn(e.name + ': ' + e.message);
 				return;
 			}
 
@@ -82,7 +82,7 @@
 				if (acceptedCharacters.comparison[char] || acceptedCharacters.logic[char] || acceptedCharacters.value[char] || acceptedCharacters.space[char]) {
 					return true;
 				} else {
-					error('Parse Error', 'Expected number or comparison or logic operator, and instead received: ' + char);
+					throw new Error('Verify character failed', 'The passed string contains an invalid character. Received: ' + ch);
 				}
 			}
 
@@ -96,8 +96,7 @@
 				try {
 					verifyChar(ch);
 				} catch(e) {
-					console.log(e.name + ': ' + e.message);
-					error('Verify character failed', 'The passed string contains an invalid character');
+					console.warn(e.name + ': ' + e.message);
 					return;
 				}
 
@@ -120,7 +119,14 @@
 					// console.log('ch: ' + ch);
 
 					// if opening parenthesis, start recursive call
-					if (string.indexOf('(') > -1 || string.indexOf(')') > -1) {
+					if (string.indexOf('(') >= 0 && string.indexOf(')') < 0) {
+					 try {
+						 throw new Error('Syntax Error', 'A close parenthesis is missing');
+					 } catch(e) {
+						 console.warn(e.name + ': ' + e.message);
+						 return;
+					 }
+				 	} else if (string.indexOf('(') > -1 || string.indexOf(')') > -1) {
 						console.log('stringParse -- found parenthesis');
 						console.log('stringParse -- string: ' + string);
 						if (acceptedCharacters.logic[ch] === '(') {
@@ -136,7 +142,19 @@
 							console.groupEnd();
 						} else if (acceptedCharacters.logic[ch] === ')') {
 							console.group('Closed Parenthesis');
+
 							// end of recursive functionn -- parse the whole scope and return it to stringParse
+
+							// To explain: once the deepest nested parenthetical is isolated,
+							// it is sent to the scopeParse, logicParse, and eval functions.
+							// What is returned from this chain is a boolean, which is then
+							// converted to a string and concatenated to a higher level of 'scope'.
+							//
+							// In other words, an expression like this: >2000 || ((>320 && <768) || (>1600 && <1900))
+							// is turned into this: 										>2000 || (true || (>1600 && <1900))
+							// then:																		>2000 || (true || false)
+							// then: 																		>2000 || true
+							// and finally: 														true
 							var recursiveReturn = {
 								parsedUnit: scopeParse(scope),
 								indexesToSkip: scope.length
@@ -151,8 +169,6 @@
 							console.log('No parenthesis -- scope after += ch: ' + scope);
 						}
 					// making sure both ends of parentheses are present
-					} else if ((string.indexOf('(') < 0 && string.indexOf(')') > -1) || (string.indexOf('(') > -1 && string.indexOf(')') < 0)) {
-						try {} catch(e) { error('Syntax Error', 'Expected both opening and closing parentheses but only found one'); }
 					} else {
 						// If current character is not ( or ), then add it to scope
 						scope += ch;
@@ -162,7 +178,20 @@
 				console.log('scope: ' + scope);
 				console.dir('scopeParse(scope): ' + scopeParse(scope));
 				console.groupEnd();
-				return scopeParse(scope);
+
+				// Parse scope and save to variable to check for undefined
+				var scopeCheck = scopeParse(scope);
+
+				try {
+					if (typeof scopeCheck === 'undefined') {
+						throw new Error('Syntax Error', 'One of the expressions returned undefined, meaning there is a syntax error')
+					}
+				} catch(e) {
+					console.warn(e.name + ': ' + e.message);
+					return;
+				}
+
+				return scopeCheck;
 			}
 
 
@@ -170,6 +199,16 @@
 
 			function scopeParse(string) {
 				console.group('scopeParse');
+
+				// Check for failed character verifications, which become undefined
+				try {
+					if (string.indexOf('undefined') > -1) {
+						throw new Error('Syntax Error', 'An unacceptable character was passed that became undefined');
+					}
+				} catch(e) {
+					console.warn(e.name + ': ' + e.message);
+					return;
+				}
 
 				// Once the 'scope' is extracted from parentheses, this function will send it to the logic and eval functions
 				// prep data to send for logic parsing
@@ -240,26 +279,32 @@
 
 				for (var i = 0; i < (unit.logic.length === 0 ? 1 : unit.logic.length);) {
 
-					// If no logic, simply evaluate single
-					if (unit.logic.length === 0) {
-						console.log('no logic operators');
-						evalResults.push(eval(unit.comparison[i], unit.value[i]));
+					try {
+						// If no logic, simply evaluate single
+						if (unit.logic.length === 0) {
+							console.log('no logic operators');
+							evalResults.push(eval(unit.comparison[i], unit.value[i]));
 
-					// Otherwise evaluate && and ||
-					} else if (unit.logic[i] === '&&') {
-						console.log('found &&');
-						evalResults.push(eval(unit.comparison[i], unit.value[i]) && eval(unit.comparison[i + 1], unit.value[i + 1]));
-						console.log('i: ' + eval(unit.comparison[i], unit.value[i]) + '; i + 1' + eval(unit.comparison[i + 1], unit.value[i + 1]));
-						console.log('evalResults[' + i + ']: ' + evalResults[i]);
+						// Otherwise evaluate && and ||
+						} else if (unit.logic[i] === '&&') {
+							console.log('found &&');
+							evalResults.push(eval(unit.comparison[i], unit.value[i]) && eval(unit.comparison[i + 1], unit.value[i + 1]));
+							console.log('i: ' + eval(unit.comparison[i], unit.value[i]) + '; i + 1: ' + eval(unit.comparison[i + 1], unit.value[i + 1]));
+							console.log('evalResults[' + i + ']: ' + evalResults[i]);
 
-					} else if (unit.logic[i] === '||') {
-						console.log('found ||');
-						evalResults.push(eval(unit.comparison[i], unit.value[i]) || eval(unit.comparison[i + 1], unit.value[i + 1]));
-						console.log('evalResults[' + i + ']: ' + evalResults[i]);
+						} else if (unit.logic[i] === '||') {
+							console.log('found ||');
+							evalResults.push(eval(unit.comparison[i], unit.value[i]) || eval(unit.comparison[i + 1], unit.value[i + 1]));
+							console.log('evalResults[' + i + ']: ' + evalResults[i]);
 
-					} else if (unit.logic.length < (unit.value.length - 1)) {
-						error('Logic error', 'Too few logic operators found -- please check your syntax. Logic operators found: ' + unit.logic.length + '; Values found: ' + unit.value.length);
+						} else if (unit.logic.length < (unit.value.length - 1)) {
+							throw new Error('Logic Error', 'Too few logic operators found -- please check your syntax. Number of logic operators: ' + unit.logic.length + ' vs number of values: ' + unit.value.length + '. logic.length should always be === to (value.length - 1)');
+						}
+					} catch(e) {
+						console.warn(e.name + ': ' + e.message);
+						return;
 					}
+
 
 					i++;
 				}
@@ -268,6 +313,8 @@
 				evalResults.forEach(function(el) {
 					if (el === false || el === 'false') {
 						evalFinalResult = false;
+					} else if (el === undefined) {
+						evalFinalResult = undefined;
 					}
 				});
 
@@ -285,45 +332,49 @@
 				var evalResult; // Setting up result outside loop to return
 				console.group('eval');
 				console.log('value: ' + value);
-				if (value !== 'true' && value !== 'false') {
-					console.log("isn't boolean");
-					// convert stringified comparison operator to real operator and evaluate
-					switch (comparison) {
-						case '<':
-							window.innerWidth < value ? evalResult = true : evalResult = false;
-							break;
-						case '>':
-							window.innerWidth > value ? evalResult = true : evalResult = false;
-							break;
-						case '>=':
-							window.innerWidth >= value ? evalResult = true : evalResult = false;
-							break;
-						case '<=':
-							window.innerWidth <= value ? evalResult = true : evalResult = false;
-							break;
-						case '=':
-							window.innerWidth === parseInt(value) ? evalResult = true : evalResult = false;
-							break;
-						default:
-							try {
+				try {
+					if (value !== 'true' && value !== 'false') {
+						console.log("isn't boolean");
+						// convert stringified comparison operator to real operator and evaluate
+						switch (comparison) {
+							case '<':
+								window.innerWidth < value ? evalResult = true : evalResult = false;
+								break;
+							case '>':
+								window.innerWidth > value ? evalResult = true : evalResult = false;
+								break;
+							case '>=':
+								window.innerWidth >= value ? evalResult = true : evalResult = false;
+								break;
+							case '<=':
+								window.innerWidth <= value ? evalResult = true : evalResult = false;
+								break;
+							case '=':
+								window.innerWidth === parseInt(value) ? evalResult = true : evalResult = false;
+								break;
+							default:
 								if (value !== 'true' && value !== 'false' && (typeof comparison === 'undefined')) {
-									error('Syntax Error', 'Missing comparison operator.');
+									throw new Error('Syntax Error', 'Missing comparison operator.');
 								} else if (value !== 'true' && value !== 'false') {
-									error('Syntax Error', 'Incorrect comparison operator. Received: ' + comparison);
+									throw new Error('Syntax Error', 'Incorrect comparison operator. Received: ' + comparison);
 								}
-							} catch(e) {
-								console.log(e.name + ': ' + e.message);
-							}
-							break;
+								break;
+						}
+					} else if (value === 'true') {
+						// convert string to boolean
+						evalResult = true;
+						console.log('is boolean -- evalResult: ' + evalResult + '; value: ' + value);
+					} else if (value === 'false') {
+						// convert string to boolean
+						evalResult = false;
+					} else {
+						throw new Error('Data Type Error', 'Expected number or true or false in eval function, instead received ' + value);
 					}
-				} else if (value === 'true') {
-					evalResult = true;
-					console.log('is boolean -- evalResult: ' + evalResult + '; value: ' + value);
-				} else if (value === 'false') {
-					evalResult = false;
-				} else {
-					error('Data type error', 'Expected number or true or false in eval function, instead received ' + value);
+				} catch(e) {
+					console.warn(e.name + ': ' + e.message);
+					return;
 				}
+
 				console.groupEnd();
 				return evalResult;
 			}
@@ -336,13 +387,47 @@
 		}
 	});
 
+
+	// EVENT-BINDING PLUGIN  ------------------------------------/
+
 	$.fn.mediaQuery = function(query, matchingFunc, nonMatchingFunc, toggle) {
 
-		// FUNCTION INVOKED IN MATCHING && NONMATCHING MEDIA QUERY --------------------/
+		// Verifying args
+		var acceptedTypes = {
+			firstArg: ['string'],
+			secondArg: ['function'],
+			thirdArg: ['function', 'boolean', 'undefined'],
+			fourthArg: ['boolean', 'undefined']
+		}
+
+		try {
+			if ((acceptedTypes.firstArg.indexOf(typeof query) < 0) || (acceptedTypes.secondArg.indexOf(typeof matchingFunc) < 0)) {
+
+				throw new Error('Data Type Error', 'Expected first and second arguments to be a string and function, respectively, and instead received a(n) ' + typeof arguments[0] + ' and ' + typeof arguments[1]);
+			} else if (acceptedTypes.thirdArg.indexOf(typeof nonMatchingFunc) < 0) {
+
+				throw new Error('Data Type Error', 'Expected optional third argument to be a function, boolean, or undefined, and intead received a(n) ' + typeof arguments[2]);
+			} else if (acceptedTypes.fourthArg.indexOf(typeof toggle) < 0) {
+
+				throw new Error('Data Type Error', 'Expected optional fourth and final argument to be a boolean or undefined, and instead received a(n) ' + typeof arguments[3]);
+			} else if (arguments.length > 4) {
+
+				throw new Error('Too many arguments', 'Please only pass up to four arguments with the following data types: string, function[, function||boolean[, boolean]]. Instead received ' + arguments.length + ' arguments.');
+			}
+		} catch(e) {
+			console.warn(e.name + ': ' + e.message);
+			return;
+		}
+
+		// Prepping arguments so that third is optional
+		if (typeof nonMatchingFunc === 'boolean') {
+			toggle = nonMatchingFunc;
+		}
+
+		// Function invoking matched or unmatched media query --------------------/
 		var toggled = true;
 
 		function matchMedia(el, ready) {
-
 			if ($.mediaQuery(query)) {
 				if ((toggle === undefined) || toggle) {
 					if (toggled) {
@@ -354,14 +439,13 @@
 				}
 			}	else if (!$.mediaQuery(query)) {
 				if ((toggle === undefined) || toggle) {
-					if (ready) {
-						toggled = false;
-					}
-					if (!toggled) {
+					// making sure nonMatchingFunc runs on pageload
+					toggled = ready ? false : true;
+					if (!toggled && typeof nonMatchingFunc === 'function') {
 						nonMatchingFunc(el);
 						toggled = true;
 					}
-				} else if (!toggle) {
+				} else if (!toggle && typeof nonMatchingFunc === 'function') {
 					nonMatchingFunc(el);
 				}
 			}
@@ -369,11 +453,14 @@
 
 		var that = this;
 
+		if (document.readyState === 'complete') {
+			matchMedia($(that), true);
+		}
 		$(document).on('ready', function() {
-			matchMedia($(that), true)
+			matchMedia($(that), true);
 		});
 		$(window).on('resize', function() {
-			matchMedia($(that))
+			matchMedia($(that));
 		});
 	}
 
