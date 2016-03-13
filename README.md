@@ -75,6 +75,7 @@ $(el).('>768', function(el) { el.css('background', 'black'); }, function(el) { e
 
 This is the preferred method, but I grant that you may not always be able to run these functions at the same time.
 
-Please let me know if you have any feedback! I mostly focused on the parsing capabilities, as that was the most interesting part to program. I hope you enjoy.
+# I Hope You Enjoy!
+Please let me know if you have any feedback! I mostly focused on the parsing capabilities, as that was the most interesting part to program. Thanks for reading :)
 
 
