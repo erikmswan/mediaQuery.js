@@ -33,7 +33,7 @@ $.mediaQuery('>320 && <768 && >1200');
 $.mediaQuery('(>320 && <768) || (>1200 && <1600)');
 ```
 
-each of these will test against the value of window.innerWidth and returning a boolean. You can nest paranthesis as many times as you like.
+each of these will test against the value of window.innerWidth and return a boolean. You can nest paranthesis as many times as you like.
 
 ## Plugin
 
