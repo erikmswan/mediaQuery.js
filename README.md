@@ -10,10 +10,10 @@ which can only be passed a single string consisting of a query to the current vi
 The second component is an event binder based on the passed media query. This component is a jQuery plugin (rather than an extension), which will bind a function that runs when the media query is matched to the viewport and another that runs when the viewport is unmatched. For example:
 
 ```javascript
-$(element).mediaQuery('>480 && <768', matchingFunction(argument), unMatchingFunction(argument));
+$(element).mediaQuery('>480 && <768', matchingFunction(collection), unMatchingFunction(collection));
 ```
 
-I've also tried to make it as user-friendly as possible, so the script makes friendly console warnings if something goes wrong.
+I've also tried to make it as user-friendly as possible, so the script makes console warnings if something goes wrong.
 
 # How to Use
 ## Extension
