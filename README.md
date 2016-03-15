@@ -37,28 +37,35 @@ each of these will test against the value of window.innerWidth and return a bool
 
 ## Plugin
 
-This method will attach the 2 callbacks to the document ready event and the window resize event, or simply run the functions if the ready event has passed. These two functions will be invoked when the media query is match and unmatched, respectively, and will each be passed the jQuery collection upon which the plugin is invoked. For example:
+This method will attach 2 callbacks to the document ready event and the window resize event, or simply run the functions if the ready event has passed. These two functions will be invoked when the media query is matched and unmatched, respectively, and will each be passed the jQuery collection upon which the plugin is invoked. For example:
 
 ```javascript
-$(el).mediaQuery('>320 && <768 && >1200', matchingFunction($(el)), unMatchingFunction($(el));
+$(el).mediaQuery('(>320 && <768) || >1200', matchingFunction($(el)), unMatchingFunction($(el));
 ```
+
+When the window is either between 320px and 768px wide or greater than 1200px, the matchingFunction will be invoked with $(el) as its argument. When this range is left -- in other words, when the window is less than 320px or between 768px and 1200px wide -- the unMatchingFunction will be invoked, again with $(el) as its argument.
 
 The unMatchingFunction is optional.
 
-By default, there is a toggle in place so that the functions are only run once when either the matched or unmatched ranges are entered. This can be disabled by passing a boolean as either the fourth argument or the third one -- if you have elected not to pass an unMatchingFunction -- allowing the function to run every time the window resize event is fired. For example:
+### Optional Toggle
+By default, there is a toggle in place so that the callbacks are only invoked a single time when either the matched or unmatched ranges are entered. This can be disabled by passing a boolean as either the fourth argument or the third one (if you have elected not to pass an unMatchingFunction), allowing the function to run every time the window resize event is fired. 
+
+True is the same as passing nothing -- it means, 'please include the toggle.' You must pass false to have the functions run at every window resize.
+
+For example:
 
 ```javascript
-$.mediaQuery('>320 && <768 && >1200', matchingFunction(argument), unMatchingFunction(argument), true);
+$.mediaQuery('(>320 && <768) || >1200', matchingFunction(argument), unMatchingFunction(argument), false);
 ```
 
-This method is necessary if you want to invoke this method multiple times, otherwise the function may not run in the proper range. For instance, if you run:
+If the toggle is left on, it may not produce the expected behavior. For example, if you run:
 
 ```javascript
 $(el).('>320', function(el) { el.css('background', 'black'); });
 $(el).('>768', function(el) { el.css('background', 'red'); });
 ```
 
-With the toggle, the background of 'el' would not turn black at 767px, as you might expect. The range of >320 must be exited, meaning the window would have to be resized to at least 319, and then reentered again to make sure the matching function runs.
+the background of 'el' would not turn black at 767px as you might expect. The range of >320 must be exited, meaning the window would have to be resized to at least 319, and then reentered again to get the matching function invoked.
 
 Without the toggle, the function will run at every resize, and the background of 'el' will change black at 767px. For example:
 
@@ -67,13 +74,13 @@ $(el).('>320', function(el) { el.css('background', 'black'); }, false);
 $(el).('>768', function(el) { el.css('background', 'red'); });
 ```
 
-This can accomplished with the plugin, of course, keeping the toggle intact:
+This can accomplished with the toggle still on, of course, if you pass an unmatching callback:
 
 ```javascript
 $(el).('>768', function(el) { el.css('background', 'black'); }, function(el) { el.css('background', 'red'); });
 ```
 
-This is the preferred method, but I grant that you may not always be able to run these functions at the same time.
+This is the preferred way, but I grant that you may not always be able to bind these functions at the same time.
 
 # I Hope You Enjoy!
 Please let me know if you have any feedback! I mostly focused on the parsing capabilities, as that was the most interesting part to program. Thanks for reading :)
