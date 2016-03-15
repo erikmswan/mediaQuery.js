@@ -2,7 +2,7 @@
 mediaQuery.js is both a jQuery extension and plugin with two different components. The first component is the extension:
 
 ```javascript
-$.mediaQuery();
+$.mediaQuery('>479 && <768');
 ```
 
 which can only be passed a single string consisting of a query to the current viewport, returning either true or false. Rather than using css-like syntax (e.g. 'max-width: 480px and min-width: 768'), it instead uses mathematical and programming symbols.
