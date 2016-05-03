@@ -1,5 +1,5 @@
 # mediaQuery.js
-mediaQuery.js is both a jQuery extension and plugin with two different components. The first component is the extension:
+mediaQuery.js  consists of two components: a jQuery extension and a plugin. The first component is the extension:
 
 ```javascript
 $.mediaQuery('>479 && <768');
