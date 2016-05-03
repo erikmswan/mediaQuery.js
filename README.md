@@ -82,6 +82,10 @@ $(el).('>768', function(el) { el.css('background', 'black'); }, function(el) { e
 
 This is the preferred way, but I grant that you may not always be able to bind these functions at the same time.
 
+# Planned improvements
+
+I'd like to turn the argument into an object which allows you to pass the query against the width or the height of the viewport. I'd also like to give you the ability to name queries for the purposes of modifying or unbinding the functions associated with them.
+
 # I Hope You Enjoy!
 Please let me know if you have any feedback! I mostly focused on the parsing capabilities, as that was the most interesting part to program. Thanks for reading :)
 
