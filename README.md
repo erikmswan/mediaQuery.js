@@ -7,10 +7,10 @@ $.mediaQuery('>479 && <768');
 
 which can only be passed a single string consisting of a query to the current viewport, returning either true or false. Rather than using css-like syntax (e.g. 'max-width: 480px and min-width: 768'), it instead uses mathematical and programming symbols.
 
-The second component is an event binder based on the passed media query. This component is a jQuery plugin (rather than an extension), which will bind a function that runs when the media query is matched to the viewport and another that runs when the viewport is unmatched. For example:
+The second component is an event binder based on the passed media query. This component is a jQuery plugin that will bind a function that runs when the media query is matched to the viewport and another that runs when the viewport is unmatched. For example:
 
 ```javascript
-$(element).mediaQuery('>480 && <768', matchingFunction(collection), unMatchingFunction(collection));
+$(element).mediaQuery('>480 && <768', matchingFunction(), unMatchingFunction());
 ```
 
 I've also tried to make it as user-friendly as possible, so the script makes console warnings if something goes wrong.
@@ -40,7 +40,7 @@ each of these will test against the value of window.innerWidth and return a bool
 This method will attach 2 callbacks to the document ready event and the window resize event, or simply run the functions if the ready event has passed. These two functions will be invoked when the media query is matched and unmatched, respectively, and will each be passed the jQuery collection upon which the plugin is invoked. For example:
 
 ```javascript
-$(el).mediaQuery('(>320 && <768) || >1200', matchingFunction($(el)), unMatchingFunction($(el));
+$(el).mediaQuery('(>320 && <768) || >1200', matchingFunction(), unMatchingFunction();
 ```
 
 When the window is either between 320px and 768px wide or greater than 1200px, the matchingFunction will be invoked with $(el) as its argument. When this range is left -- in other words, when the window is less than 320px or between 768px and 1200px wide -- the unMatchingFunction will be invoked, again with $(el) as its argument.
