@@ -14,7 +14,7 @@
 	// PARSING EXTENSION ------------------------------------/
 
 	$.extend({
-		mediaQuery: function() {
+		mediaQuery: function(opts) {
 
 
 			// PARSING ARGS ----------------------------------/
@@ -53,21 +53,23 @@
 						}
 					};
 
+
+			// prepping options default
+			var options = {
+				width: opts.width,
+				height: opts.height
+			}
+
 			// Converting the arguments array to an actual array
 			var args = Array.prototype.slice.call(arguments);
 
 			// Throw error if wrong data type or too many arguments
 			try {
-				if (typeof args[0] !== 'string') {
-					void 0;
-					throw new Error('Data Type Error', 'Please only pass one string argument with an optional boolean to include the raw and evaluated data instead. Queries can be chained by including them in one string separated by the && operator, e.g. ">768 && <1024"');
-
-				} else if (typeof args[0] === 'string' && typeof args[1] !== 'boolean' && typeof args[1] !== 'undefined') {
-					void 0;
-					throw new Error('Data Type Error', 'The second argument must be a boolean, which will determine whether the method returns the raw and evaluated data instead.');
-
-				} else if (args.length > 2) {
-					throw new Error('Too Many Aguments', 'Please only pass one string argument with an optional boolean to include the raw and evaluated data instead. Queries can be chained by including them in one string separated by logic operators, e.g. "(>768 && <1024) || (<320 && >1600)"');
+				// if (typeof options.width !== 'string' || typeof options.height !== 'string') {
+				// 	throw new Error('Data Type Error', 'Please pass a string in the width or height keys of the options object. Queries can be chained by including them in one string separated by the && operator, e.g. ">768 && <1024"');
+				// } else
+				if (args.length > 1) {
+					throw new Error('Too Many Aguments', 'Please only pass one object argument with the "width" or "height" keys.');
 				}
 			} catch(e) {
 				void 0;
@@ -104,14 +106,24 @@
 			}
 
 
+			// Manage the object
+			function objManager(obj) {
+				for (var key in obj) {
+					if (obj.key !== undefined) {
+						stringParse(obj.key, key)
+					}
+				}
+			}
+
+
 			// Parse the string, evaluating units until flat results object array is produced
-			function stringParse(string) {
+			function stringParse(string, dim) {
 
 				// prep unit variable
 				var scope = '';
 
 				for (var at = 0; at < string.length;) {
-
+					void 0;
 					// console.group('stringParse');
 					// Grab next character
 					var ch = nextChar(string, at);
@@ -134,7 +146,7 @@
 							void 0;
 							void 0;
 							// Call recursive function to walk nested parenthesis scopes
-							var parsedUnit = stringParse(string.slice(at))
+							var parsedUnit = stringParse(string.slice(at), dim)
 
 							scope += parsedUnit.parsedUnit;
 							at += parsedUnit.indexesToSkip + 1;
@@ -156,7 +168,7 @@
 							// then: 																		>2000 || true
 							// and finally: 														true
 							var recursiveReturn = {
-								parsedUnit: scopeParse(scope),
+								parsedUnit: scopeParse(scope, dim),
 								indexesToSkip: scope.length
 							}
 							void 0;
@@ -180,7 +192,7 @@
 				void 0;
 
 				// Parse scope and save to variable to check for undefined
-				var scopeCheck = scopeParse(scope);
+				var scopeCheck = scopeParse(scope, dim);
 
 				try {
 					if (typeof scopeCheck === 'undefined') {
@@ -197,7 +209,7 @@
 
 			// PARSE SINGLE SCOPE ------------------------------------/
 
-			function scopeParse(string) {
+			function scopeParse(string, dim) {
 				void 0;
 
 				// Check for failed character verifications, which become undefined
@@ -262,13 +274,13 @@
 				void 0;
 				void 0
 				void 0;
-				return logicParse(currentUnit);
+				return logicParse(currentUnit, dim);
 			}
 
 
 			// EVALUATE SCOPE LOGIC ------------------------------------/
 
-			function logicParse(unit) {
+			function logicParse(unit, dim) {
 				// Once the scope array has been prepped,
 				// this function will evaluate all logic and return a single boolean
 				void 0;
@@ -283,18 +295,18 @@
 						// If no logic, simply evaluate single
 						if (unit.logic.length === 0) {
 							void 0;
-							evalResults.push(eval(unit.comparison[i], unit.value[i]));
+							evalResults.push(eval(unit.comparison[i], unit.value[i], dim));
 
 						// Otherwise evaluate && and ||
 						} else if (unit.logic[i] === '&&') {
 							void 0;
-							evalResults.push(eval(unit.comparison[i], unit.value[i]) && eval(unit.comparison[i + 1], unit.value[i + 1]));
+							evalResults.push(eval(unit.comparison[i], unit.value[i], dim) && eval(unit.comparison[i + 1], unit.value[i + 1], dim));
 							void 0;
 							void 0;
 
 						} else if (unit.logic[i] === '||') {
 							void 0;
-							evalResults.push(eval(unit.comparison[i], unit.value[i]) || eval(unit.comparison[i + 1], unit.value[i + 1]));
+							evalResults.push(eval(unit.comparison[i], unit.value[i], dim) || eval(unit.comparison[i + 1], unit.value[i + 1], dim));
 							void 0;
 
 						} else if (unit.logic.length < (unit.value.length - 1)) {
@@ -327,9 +339,10 @@
 
 			// EVALUATE MATH UNITS ------------------------------------/
 
-			function eval(comparison, value) {
+			function eval(comparison, value, dim) {
 
 				var evalResult; // Setting up result outside loop to return
+				void 0;
 				void 0;
 				void 0;
 				try {
@@ -382,7 +395,8 @@
 			void 0;
 
 			// PARSE AND EVALUATE!
-			return stringParse(args[0]);
+			// return stringParse(opts);
+			return objManager(opts);
 
 		}
 	});

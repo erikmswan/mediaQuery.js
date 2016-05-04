@@ -41,3 +41,7 @@ gulp.task('scripts', function() {
 
 // default task
 gulp.task('default', ['scripts']);
+
+gulp.task('watch', function() {
+  gulp.watch('./src/*.js', ['scripts', 'jshint']);
+});
