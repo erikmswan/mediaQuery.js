@@ -3,10 +3,10 @@ var gulp = require('gulp');
 
 // include plug-ins
 var jshint = require('gulp-jshint'),
-  stripDebug = require('gulp-strip-debug'),
-  uglify = require('gulp-uglify'),
-  rename = require('gulp-rename'),
-  cache = require('gulp-cached');
+    stripDebug = require('gulp-strip-debug'),
+    uglify = require('gulp-uglify'),
+    rename = require('gulp-rename'),
+    cache = require('gulp-cached');
 
 
 // JSHint task
@@ -15,14 +15,6 @@ gulp.task('jshint', function() {
     .pipe(cache('linting'))
     .pipe(jshint())
     .pipe(jshint.reporter('default'));
-});
-
-
-// JSHint watch task
-gulp.task('jsWatch', function() {
-
-  // watch for JS changes
-  gulp.watch('./src/*.js', ['jshint']);
 });
 
 // JS concat, strip debugging and minify
@@ -38,6 +30,10 @@ gulp.task('scripts', function() {
     .pipe(gulp.dest('./dist/'));
 });
 
-
 // default task
 gulp.task('default', ['scripts']);
+
+// Watch task
+gulp.task('watch', function() {
+  gulp.watch('./src/*.js', ['jshint', 'scripts']);
+});

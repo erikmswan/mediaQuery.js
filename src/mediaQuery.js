@@ -283,18 +283,18 @@
 						// If no logic, simply evaluate single
 						if (unit.logic.length === 0) {
 							console.log('no logic operators');
-							evalResults.push(eval(unit.comparison[i], unit.value[i]));
+							evalResults.push(unitEval(unit.comparison[i], unit.value[i]));
 
 						// Otherwise evaluate && and ||
 						} else if (unit.logic[i] === '&&') {
 							console.log('found &&');
-							evalResults.push(eval(unit.comparison[i], unit.value[i]) && eval(unit.comparison[i + 1], unit.value[i + 1]));
-							console.log('i: ' + eval(unit.comparison[i], unit.value[i]) + '; i + 1: ' + eval(unit.comparison[i + 1], unit.value[i + 1]));
+							evalResults.push(unitEval(unit.comparison[i], unit.value[i]) && unitEval(unit.comparison[i + 1], unit.value[i + 1]));
+							console.log('i: ' + unitEval(unit.comparison[i], unit.value[i]) + '; i + 1: ' + unitEval(unit.comparison[i + 1], unit.value[i + 1]));
 							console.log('evalResults[' + i + ']: ' + evalResults[i]);
 
 						} else if (unit.logic[i] === '||') {
 							console.log('found ||');
-							evalResults.push(eval(unit.comparison[i], unit.value[i]) || eval(unit.comparison[i + 1], unit.value[i + 1]));
+							evalResults.push(unitEval(unit.comparison[i], unit.value[i]) || unitEval(unit.comparison[i + 1], unit.value[i + 1]));
 							console.log('evalResults[' + i + ']: ' + evalResults[i]);
 
 						} else if (unit.logic.length < (unit.value.length - 1)) {
@@ -327,7 +327,7 @@
 
 			// EVALUATE MATH UNITS ------------------------------------/
 
-			function eval(comparison, value) {
+			function unitEval(comparison, value) {
 
 				var evalResult; // Setting up result outside loop to return
 				console.group('eval');
