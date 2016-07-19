@@ -40,8 +40,10 @@ each of these will test against the value of window.innerWidth and return a bool
 This method will attach 2 callbacks to the document ready event and the window resize event, or simply run the functions if the ready event has passed. These two functions will be invoked when the media query is matched and unmatched, respectively, and will each be passed the jQuery collection upon which the plugin is invoked. For example:
 
 ```javascript
-$(el).mediaQuery('(>320 && <768) || >1200', matchingFunction(), unMatchingFunction();
+$(el).mediaQuery('(>320 && <768) || >1200', matchingFunction, unMatchingFunction);
 ```
+
+PLEASE NOTE: As of now, you can only use anonymous functions as callbacks. I know, sorry.
 
 When the window is either between 320px and 768px wide or greater than 1200px, the matchingFunction will be invoked with $(el) as its argument. When this range is left -- in other words, when the window is less than 320px or between 768px and 1200px wide -- the unMatchingFunction will be invoked, again with $(el) as its argument.
 
@@ -85,6 +87,10 @@ This is the preferred way, but I grant that you may not always be able to bind t
 # Planned improvements
 
 I'd like to turn the argument into an object which allows you to pass the query against the width or the height of the viewport. I'd also like to give you the ability to name queries for the purposes of modifying or unbinding the functions associated with them.
+
+I also need to fix using named functions rather than anonymous as callbacks in the plugin.
+
+I also want to provide the plugin funcitonality to the extension, so you can simply use '$.mediaQuery(query, matchingFunc, unmatchingFunc)' instead of having to invoke it on a collection.
 
 # I Hope You Enjoy!
 Please let me know if you have any feedback! I mostly focused on the parsing capabilities, as that was the most interesting part to program. Thanks for reading :)
