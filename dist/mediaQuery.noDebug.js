@@ -431,22 +431,22 @@
 			if ($.mediaQuery(query)) {
 				if ((toggle === undefined) || toggle) {
 					if (toggled) {
-						matchingFunc(el);
+						matchingFunc.bind(null, el);
 						toggled = false;
 					}
 				} else if (!toggle) {
-					matchingFunc(el);
+					matchingFunc.bind(null, el);;
 				}
 			}	else if (!$.mediaQuery(query)) {
 				if ((toggle === undefined) || toggle) {
 					// making sure nonMatchingFunc runs on pageload
 					toggled = ready ? false : true;
 					if (!toggled && typeof nonMatchingFunc === 'function') {
-						nonMatchingFunc(el);
+						nonMatchingFunc.bind(null, el);
 						toggled = true;
 					}
 				} else if (!toggle && typeof nonMatchingFunc === 'function') {
-					nonMatchingFunc(el);
+					nonMatchingFunc.bind(null, el);
 				}
 			}
 		}
